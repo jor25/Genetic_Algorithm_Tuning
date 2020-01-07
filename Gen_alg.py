@@ -4,6 +4,8 @@
 
 import numpy as np
 import Model_arch as ma
+import tensorflow as tf
+import matplotlib
 
 """
 Genetic algorithm class will manage network tuning.
