@@ -23,9 +23,10 @@ class Gen_alg:
         self.chrom_num = 10
         self.population = [DNA(id, self.chrom_num) for id in range(self.pop_num)]
         self.survivors = np.zeros(self.remaining)           # Survivors per generation
+        self.func = np.random.choice([10, 20, 30], self.chrom_num)
 
     def fitness(self):                                      # Take the top half of the population of them
-        function = [10, 20, 30, 20, 10, 20, 30, 20, 10, 20]                     # Temp example to make sure this works
+        function = self.func                     # Temp example to make sure this works
         pop_fits = np.zeros(self.pop_num, dtype=int)        # Holds all fitness values
         pop_ind = 0
         f2 = np.asarray(function)
@@ -50,6 +51,7 @@ class Gen_alg:
             #print("****** Old_child: {} ******".format(self.population[term_ind[i]].hidden_layers))
             self.cross_over(parents[i], term_ind[i])    # Parent pair and the ID they replace
             #print("****** New_child: {} ******".format(self.population[term_ind[i]].hidden_layers))
+        print("Function: {}".format(function))
 
 
     def pair_off(self, surv_index):
