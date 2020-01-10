@@ -15,15 +15,17 @@ Genetic algorithm class will manage network tuning.
 """
 class Gen_alg:
     def __init__(self):
-        self.pop_num = 12               # Population Number
+        self.pop_num = 100               # Population Number
         self.remaining = int(self.pop_num / 2)
-        self.gen_num = 5                                    # Number of generations
-        self.mutation_rate = .05
-        self.population = [DNA(id) for id in range(self.pop_num)]
+        self.gen_num = 50                                   # Number of generations
+        self.mutation_rate = .05                            # How likely are we to mutate
+        self.mut_val = .1                                   # How much mutation
+        self.chrom_num = 10
+        self.population = [DNA(id, self.chrom_num) for id in range(self.pop_num)]
         self.survivors = np.zeros(self.remaining)           # Survivors per generation
 
-    def fitness(self):      # Take the top half of the population of them
-        function = [10, 20, 30, 20, 10]                     # Temp example to make sure this works
+    def fitness(self):                                      # Take the top half of the population of them
+        function = [10, 20, 30, 20, 10, 20, 30, 20, 10, 20]                     # Temp example to make sure this works
         pop_fits = np.zeros(self.pop_num, dtype=int)        # Holds all fitness values
         pop_ind = 0
         f2 = np.asarray(function)
@@ -34,7 +36,7 @@ class Gen_alg:
             pop.fit_vals.append(fit_score)      # Each population member has a list of their fitnesses
             pop_fits[pop_ind] = fit_score       # Update the pop's score for specific index
             pop_ind += 1                        # Increment index
-            print("ID: {}\tFit Score: {}".format(pop.id, fit_score))
+            print("ID: {}\tFit Score: {}\tDNA: {}".format(pop.id, fit_score, pop.hidden_layers))
 
         # Merge these two together later
         surv_ind = np.argpartition(pop_fits, -self.remaining)[-self.remaining:]     # Index of the survivors
@@ -45,9 +47,9 @@ class Gen_alg:
 
         parents = self.pair_off(surv_ind)
         for i in range(len(parents)):
-            print("****** Old_child: {} ******".format(self.population[term_ind[i]].hidden_layers))
+            #print("****** Old_child: {} ******".format(self.population[term_ind[i]].hidden_layers))
             self.cross_over(parents[i], term_ind[i])    # Parent pair and the ID they replace
-            print("****** New_child: {} ******".format(self.population[term_ind[i]].hidden_layers))
+            #print("****** New_child: {} ******".format(self.population[term_ind[i]].hidden_layers))
 
 
     def pair_off(self, surv_index):
@@ -55,7 +57,7 @@ class Gen_alg:
         par_v1 = np.random.choice(surv_index, size=(int(self.remaining/2), 2), replace=False)         # Pair off v1
         par_v2 = np.random.choice(surv_index, size=(int(self.remaining/2), 2), replace=False)         # Pair off v2
         parents = np.concatenate((par_v1, par_v2), axis=0)                                         # Full pop pairs
-        print("parv1: {}\nparv2: {}\npar_all: {}".format(par_v1, par_v2, parents))    # Verify
+        #print("parv1: {}\nparv2: {}\npar_all: {}".format(par_v1, par_v2, parents))    # Verify
         return parents
 
     def cross_over(self, parents, ch_id):       # Recombine the existing survivors
@@ -66,14 +68,35 @@ class Gen_alg:
         split = int(np.random.uniform(low=1, high=len(parent_1) - 1))   # Choose random point between 1 and parent length
         child = np.hstack([parent_1[:split], parent_2[split:]])         # Take first chunk from parent 1, 2nd chunk parent 2
 
-        print("Parent_id's: = {}\nParents are: {}, {}\nChild_id: {}\nThe Child: {}".format(parents, parent_1, parent_2, ch_id, child))
+        #print("Parent_id's: = {}\nParents are: {}, {}\nChild_id: {}\nThe Child: {}".format(parents, parent_1, parent_2, ch_id, child))
 
         self.population[ch_id].hidden_layers = child    # Check this works outside...
+        self.mutation(child, ch_id)
         #pass
+
+    def mutation(self, child, ch_id):
+        # if 1, then we mutate.
+        if np.random.choice([0, 1], p=[1 - self.mutation_rate, self.mutation_rate]):
+
+            num_cells = np.random.choice(len(child), 1)  # How many cells to replace
+            mut_ind = np.random.choice(len(child), num_cells, replace=False)  # Choose from these indeces
+
+            for ind in mut_ind:
+                operation = np.random.choice(['+', '-'])
+                if operation == '+':    # Increase by 20%
+                    self.population[ch_id].hidden_layers[ind] += int(
+                        self.mut_val * self.population[ch_id].hidden_layers[ind])
+                    #pass
+                else:                   # Decrease by 20%
+                    self.population[ch_id].hidden_layers[ind] -= int(
+                        self.mut_val * self.population[ch_id].hidden_layers[ind])
+                    #pass
+            print("MUTATION: {}".format(self.population[ch_id].hidden_layers))
+
 
     def generation(self):       # Run the GA
         for i in range(self.gen_num):
-            print("Gen: {}".format(i))
+            print("**** Gen: {} ****".format(i))
             self.fitness()
 
 
@@ -82,12 +105,13 @@ Class for each individual in the population will be built off this information.
 This information will later be scrambled with crossover to create new population.
 """
 class DNA:
-    def __init__(self, id):
+    def __init__(self, id, chrom_num):
         self.id = id                        # The populant's id number
+        self.num_layers = chrom_num
         self.fit_vals = []                  # Accuracy scores to be added
-        self.input_layer = 15               # Same number for each input
-        self.hidden_layers = [rand.randint(10, 35) for i in range(5)]       # Set various hidden layers randomly
-        self.output_layer = 5               # Placeholder output layer
+        #self.input_layer = 15               # Same number for each input
+        self.hidden_layers = [rand.randint(10, 35) for i in range(self.num_layers)]       # Set various hidden layers randomly
+        #self.output_layer = 5               # Placeholder output layer
         self.history = [id]                 # List of all combinations
 
 
