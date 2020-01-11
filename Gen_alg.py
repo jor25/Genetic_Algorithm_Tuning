@@ -18,10 +18,10 @@ class Gen_alg:
     def __init__(self):
         self.pop_num = 100               # Population Number
         self.remaining = int(self.pop_num / 2)
-        self.gen_num = 200                                   # Number of generations
-        self.mutation_rate = .15                            # How likely are we to mutate
+        self.gen_num = 500                                   # Number of generations
+        self.mutation_rate = .05                            # How likely are we to mutate
         self.mut_val = .50                                   # How much mutation
-        self.chrom_num = 25                                 # How large is the DNA sequence?
+        self.chrom_num = 100                                 # How large is the DNA sequence?
         self.population = [DNA(id, self.chrom_num) for id in range(self.pop_num)]
         self.survivors = np.zeros(self.remaining)           # Survivors per generation
         self.func = np.random.choice(35, self.chrom_num)
@@ -66,14 +66,20 @@ class Gen_alg:
     def cross_over(self, parents, ch_id):       # Recombine the existing survivors
         parent_1 = self.population[parents[0]].hidden_layers        # Initialize parent 1 np array
         parent_2 = self.population[parents[1]].hidden_layers        # Initialize parent 2 np array
-
+        '''
         # Merge the survivors at some crossover point - randomly?
         split = int(np.random.uniform(low=1, high=len(parent_1) - 1))   # Choose random point between 1 and parent length
         child = np.hstack([parent_1[:split], parent_2[split:]])         # Take first chunk from parent 1, 2nd chunk parent 2
-
+        
         #print("Parent_id's: = {}\nParents are: {}, {}\nChild_id: {}\nThe Child: {}".format(parents, parent_1, parent_2, ch_id, child))
 
         self.population[ch_id].hidden_layers = child    # Check this works outside...
+        '''
+        # Alternate crossover
+        for i in range(len(parent_1)):
+            self.population[ch_id].hidden_layers[i] = np.random.choice([parent_1[i], parent_2[i]]) # Choose one of these randomly
+        child = self.population[ch_id].hidden_layers
+
         self.mutation(child, ch_id)
         self.population[ch_id].history.append([parents[0], parents[1]])     # Add parents to history
         #pass
@@ -85,9 +91,8 @@ class Gen_alg:
             num_cells = int(np.random.choice(len(child), 1) * self.mutation_rate)       # How many cells to replace, 5%
             mut_ind = np.random.choice(len(child), num_cells, replace=False)  # Choose from these indeces
 
-            self.mut_val = rand.uniform(0, 1)   # Choose how random of a change, percentage
-
             for ind in mut_ind:
+                self.mut_val = rand.uniform(0, 1)  # Choose how random of a change, percentage
                 operation = np.random.choice(['+', '-'])
                 if operation == '+':    # Increase by 20%
                     self.population[ch_id].hidden_layers[ind] += int(
