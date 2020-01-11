@@ -7,8 +7,9 @@
 import numpy as np
 import Model_arch as ma
 #import tensorflow as tf
-import matplotlib
+import matplotlib.pyplot as plt
 import random as rand
+import time
 
 """
 Genetic algorithm class will manage network tuning.
@@ -17,13 +18,13 @@ class Gen_alg:
     def __init__(self):
         self.pop_num = 100               # Population Number
         self.remaining = int(self.pop_num / 2)
-        self.gen_num = 50                                   # Number of generations
-        self.mutation_rate = .05                            # How likely are we to mutate
-        self.mut_val = .1                                   # How much mutation
-        self.chrom_num = 10
+        self.gen_num = 200                                   # Number of generations
+        self.mutation_rate = .15                            # How likely are we to mutate
+        self.mut_val = .50                                   # How much mutation
+        self.chrom_num = 25                                 # How large is the DNA sequence?
         self.population = [DNA(id, self.chrom_num) for id in range(self.pop_num)]
         self.survivors = np.zeros(self.remaining)           # Survivors per generation
-        self.func = np.random.choice([10, 20, 30], self.chrom_num)
+        self.func = np.random.choice(35, self.chrom_num)
 
     def fitness(self):                                      # Take the top half of the population of them
         function = self.func                     # Temp example to make sure this works
@@ -74,14 +75,17 @@ class Gen_alg:
 
         self.population[ch_id].hidden_layers = child    # Check this works outside...
         self.mutation(child, ch_id)
+        self.population[ch_id].history.append([parents[0], parents[1]])     # Add parents to history
         #pass
 
     def mutation(self, child, ch_id):
         # if 1, then we mutate.
         if np.random.choice([0, 1], p=[1 - self.mutation_rate, self.mutation_rate]):
 
-            num_cells = np.random.choice(len(child), 1)  # How many cells to replace
+            num_cells = int(np.random.choice(len(child), 1) * self.mutation_rate)       # How many cells to replace, 5%
             mut_ind = np.random.choice(len(child), num_cells, replace=False)  # Choose from these indeces
+
+            self.mut_val = rand.uniform(0, 1)   # Choose how random of a change, percentage
 
             for ind in mut_ind:
                 operation = np.random.choice(['+', '-'])
@@ -96,10 +100,14 @@ class Gen_alg:
             print("MUTATION: {}".format(self.population[ch_id].hidden_layers))
 
 
-    def generation(self):       # Run the GA
+    def generation(self, images):       # Run the GA
         for i in range(self.gen_num):
             print("**** Gen: {} ****".format(i))
             self.fitness()
+
+            #if (i + 1) % 2 == 0:  # display on evens
+            graph_display(images, self.population, i, self.mutation_rate)       # Interactive gen Alg display
+        #print("Fit Values: {}\nAnscestry: {}".format(self.population[0].fit_vals, self.population[0].history))
 
 
 """
@@ -110,22 +118,66 @@ class DNA:
     def __init__(self, id, chrom_num):
         self.id = id                        # The populant's id number
         self.num_layers = chrom_num
-        self.fit_vals = []                  # Accuracy scores to be added
+        self.fit_vals = [0]                  # Accuracy scores to be added
         #self.input_layer = 15               # Same number for each input
         self.hidden_layers = [rand.randint(10, 35) for i in range(self.num_layers)]       # Set various hidden layers randomly
         #self.output_layer = 5               # Placeholder output layer
         self.history = [id]                 # List of all combinations
 
 
+def graph_display(images, population, gen_num, mut_rate):
+    max_fitness = population[0].fit_vals[ np.argmax(population[0].fit_vals) ]
+
+    for i in range(len(images)):    # population length
+        images[i].set_ydata(population[i].fit_vals)
+        images[i].set_xdata(np.arange(len(population[i].fit_vals)))
+        #img1.set_xlim()
+        #print("Hello {}".format(i))
+
+        ax = plt.gca()
+        # recompute the ax.dataLim
+        ax.relim()
+        # update ax.viewLim using the new dataLim
+        ax.autoscale_view()
+
+        temp_max = population[i].fit_vals[ np.argmax(population[i].fit_vals) ]
+        if max_fitness < temp_max:
+            max_fitness = temp_max  # Update best score
+
+    # Place the title of the plot with dynamic details
+    fig.suptitle('Genetic Algorithm\n'
+                 'Max Fitness: {}'
+                 '      Generation: {}'
+                 '      Pop Size: {}'
+                 '      Mutation Rate: {}'.format(max_fitness, gen_num, len(population), mut_rate), fontsize=10)
+
+
+    # Draw the plots and wait.
+    plt.draw()
+    plt.pause(1e-15)
+    time.sleep(0.1)
+    pass
 
 """
 Where all the exciting stuff happens...
 """
 if __name__ == "__main__":
+    # Initialize Matplotlib figure
+    fig = plt.figure()
+
     print("Genetic Algorithm to tune Neural Nets")
     GA = Gen_alg()
     print(GA.pop_num)
+    images = []     # List of matplotlib elements
     for i in range(len(GA.population)):
         print("Pop_Id: {}\nLayers: {}\n".format(GA.population[i].id, GA.population[i].hidden_layers))
 
-    GA.generation()
+        # Initialize all the plots
+        temp_img, = plt.plot(GA.population[i].fit_vals, np.arange(len(GA.population[i].fit_vals)))
+        images.append(temp_img)
+
+
+    GA.generation(images)
+
+    # Keep the image around
+    plt.show()
