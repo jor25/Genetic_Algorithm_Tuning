@@ -21,10 +21,10 @@ Genetic algorithm class will manage network tuning.
 """
 class Gen_alg:
     def __init__(self):
-        self.pop_num = 200               # Population Number
+        self.pop_num = 500               # Population Number
         self.remaining = int(self.pop_num / 2)
         self.gen_num = 100                                   # Number of generations
-        self.mutation_rate = .05                            # How likely are we to mutate
+        self.mutation_rate = .45                            # How likely are we to mutate
         self.mut_val = .50                                   # How much mutation
         self.chrom_num = 100                                 # How large is the DNA sequence?
         self.population = [DNA(id, self.chrom_num) for id in range(self.pop_num)]
@@ -125,7 +125,9 @@ class Gen_alg:
             self.fitness()
 
             #if (i + 1) % 2 == 0:  # display on evens
+
             graph_display(images, self.population, i, self.mutation_rate)       # Interactive gen Alg display
+        #graph_display(images, self.population, i, self.mutation_rate)           # Not Interactive gen Alg display
         #print("Fit Values: {}\nAnscestry: {}".format(self.population[0].fit_vals, self.population[0].history))
 
 
@@ -146,8 +148,8 @@ class DNA:
 
 def graph_display(images, population, gen_num, mut_rate):
     max_fitness = population[0].fit_vals[ np.argmax(population[0].fit_vals) ]
-
-    for i in range(len(images)):    # population length
+    pop_len = int(len(images)*.05)   # for speed up - show only 5% of population
+    for i in range(pop_len):    # population length
         images[i].set_ydata(population[i].fit_vals)
         images[i].set_xdata(np.arange(len(population[i].fit_vals)))
         #img1.set_xlim()
@@ -175,7 +177,7 @@ def graph_display(images, population, gen_num, mut_rate):
     plt.draw()
     plt.pause(1e-15)
     time.sleep(0.1)
-    pass
+
 
 """
 Where all the exciting stuff happens...
