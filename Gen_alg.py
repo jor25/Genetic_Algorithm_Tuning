@@ -3,6 +3,11 @@
 # Description: Developing genetic algorithm to tune neural networks (for deep learning)
 # Resouces:
 # Collect Top K - https://stackoverflow.com/questions/6910641/how-do-i-get-indices-of-n-maximum-values-in-a-numpy-array
+# Matplotlib plots - https://matplotlib.org/tutorials/introductory/pyplot.html
+# Rescale Matplotlib - https://stackoverflow.com/questions/10984085/automatically-rescale-ylim-and-xlim-in-matplotlib
+# Horizontal stack with numpy - https://docs.scipy.org/doc/numpy/reference/generated/numpy.hstack.html
+# Concatinate numpy - https://docs.scipy.org/doc/numpy/reference/generated/numpy.concatenate.html
+# Random choice numpy - https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.choice.html
 
 import numpy as np
 import Model_arch as ma
@@ -16,9 +21,9 @@ Genetic algorithm class will manage network tuning.
 """
 class Gen_alg:
     def __init__(self):
-        self.pop_num = 100               # Population Number
+        self.pop_num = 200               # Population Number
         self.remaining = int(self.pop_num / 2)
-        self.gen_num = 500                                   # Number of generations
+        self.gen_num = 100                                   # Number of generations
         self.mutation_rate = .05                            # How likely are we to mutate
         self.mut_val = .50                                   # How much mutation
         self.chrom_num = 100                                 # How large is the DNA sequence?
@@ -46,6 +51,15 @@ class Gen_alg:
 
         term_ind = np.argpartition(pop_fits, self.remaining)[:self.remaining]     # Index of the terminated
         print("Terminated indexes: {}\tTerm_fit_vals: {}".format(term_ind, pop_fits[term_ind]))
+
+        '''
+        # Keep some of the weaker ones by chance, give them 5% chance survival to improve diversity
+        luck_ind = np.random.choice(self.remaining - 1, size=(int(self.remaining * .05)), replace=False)    # select 5 % of indeces
+        for i in range(len(luck_ind)):           # Replace some survivors with those that technically wouldn't have made it
+            temp = term_ind[luck_ind[i]]    # Doing this for diversity...
+            term_ind[luck_ind[i]] = surv_ind[luck_ind[i]]
+            surv_ind[luck_ind[i]] = temp
+        #'''
 
         parents = self.pair_off(surv_ind)
         for i in range(len(parents)):
