@@ -11,6 +11,7 @@ Machine Learning based on biology, specifically, collections of neurons.
 * `pip install numpy`
 * `pip install tensorflow`
 * `pip install matplotlib`
+* `pip install keras`
 
 ## Learnings:
 * GA does not guarantee optimal solution/global maximum, it finds the local maximums.
