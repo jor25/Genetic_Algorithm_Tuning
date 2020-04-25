@@ -1,5 +1,8 @@
 # Genetic_Algorithm_Tuning
 Genetic algorithm designed for tuning neural nets.
+* Currently, project on hold, but still in progress. Need dataset. (2/5/20)
+* The idea is to modify the model architecture across multiple neural networks
+  to maximize model accuracy on datasets.
 
 ## Genetic Algorithms:
 Classical AI inspired by Genetics. 
@@ -12,6 +15,7 @@ Machine Learning based on biology, specifically, collections of neurons.
 * `pip install tensorflow`
 * `pip install matplotlib`
 * `pip install keras`
+* `pip install sklearn`
 
 ## Learnings:
 * GA does not guarantee optimal solution/global maximum, it finds the local maximums.
@@ -33,3 +37,5 @@ Machine Learning based on biology, specifically, collections of neurons.
     - https://docs.scipy.org/doc/numpy/reference/generated/numpy.concatenate.html
 * Random choice numpy 
     - https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.choice.html
+* Keras Datasets documentation
+    - https://keras.io/datasets/
